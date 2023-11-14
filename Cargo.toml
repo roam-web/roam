@@ -1,0 +1,15 @@
+[package]
+name = "roam"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+hyper = "0.14"
+swc_html_parser = "0.39"
+cssparser = "0.33"
+selectors = "0.25"
+winit = "0.29"
+vello = { git = "https://github.com/linebender/vello" }
+taffy = "0.3"
+wasmer = "4"
+javy = "2"
