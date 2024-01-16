@@ -4,3 +4,31 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+winit = "0.29"
+wgpu = { git = "https://github.com/gfx-rs/wgpu" }
+cssparser = "0.33"
+selectors = "0.25"
+taffy = "0.3"
+quick-xml = "0.31"
+wasmer = "4"
+javy = { git = "https://github.com/bytecodealliance/javy" }
+hyper = "1"
+rustls = "0.22"
+cookie = "0.18"
+smol = "2"
+smol-hyper = "0.1"
+smol-macros = "0.1"
+macro_rules_attribute = "0.2"
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+lto = true
+strip = true
+opt-level = 3
+panic = "abort"
+codegen-units = 1
