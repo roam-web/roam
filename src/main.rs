@@ -1,3 +1,5 @@
+mod dom;
+
 use macro_rules_attribute::apply;
 use smol_macros::{main, Executor};
 use winit::{
@@ -84,7 +86,7 @@ async fn main(ex: &Executor<'_>) -> Result<(), impl std::error::Error> {
         format: swapchain_format,
         width: size.width,
         height: size.height,
-        present_mode: wgpu::PresentMode::Fifo,
+        present_mode: wgpu::PresentMode::AutoVsync,
         alpha_mode: swapchain_capabilities.alpha_modes[0],
         view_formats: vec![],
     };
