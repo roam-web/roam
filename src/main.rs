@@ -2,14 +2,35 @@ mod dom;
 
 use macro_rules_attribute::apply;
 use smol_macros::{main, Executor};
+use wasmer::{imports, Instance, Module, Store, Value};
 use winit::{
+    event::{Event, WindowEvent},
     event_loop::EventLoop,
     window::WindowBuilder,
-    event::{Event, WindowEvent},
 };
 
 #[apply(main!)]
 async fn main(ex: &Executor<'_>) -> Result<(), impl std::error::Error> {
+    let module_wat = r#"
+    (module
+    (type $t0 (func (param i32) (result i32)))
+    (func $add_one (export "add_one") (type $t0) (param $p0 i32) (result i32)
+        get_local $p0
+        i32.const 1
+        i32.add))
+    "#;
+
+    let mut store = Store::default();
+    let module = Module::new(&store, &module_wat).unwrap();
+
+    let import_object = imports! {};
+    let instance = Instance::new(&mut store, &module, &import_object).unwrap();
+
+    let add_one = instance.exports.get_function("add_one").unwrap();
+    let result = add_one.call(&mut store, &[Value::I32(42)]).unwrap();
+
+    println!("{result:?}");
+
     let event_loop = EventLoop::new().unwrap();
 
     let window = WindowBuilder::new()
@@ -98,7 +119,7 @@ async fn main(ex: &Executor<'_>) -> Result<(), impl std::error::Error> {
         // we must move these in since event_loop.run doesn't return
         // in order to do proper cleanup
         let _ = (&instance, &adapter, &shader, &pipeline_layout);
-        
+
         match event {
             Event::WindowEvent { event, window_id } if window_id == window.id() => match event {
                 WindowEvent::CloseRequested => elwt.exit(),
@@ -111,27 +132,24 @@ async fn main(ex: &Executor<'_>) -> Result<(), impl std::error::Error> {
                     let view = frame
                         .texture
                         .create_view(&wgpu::TextureViewDescriptor::default());
-                    let mut encoder =
-                        device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                            label: None,
-                        });
+                    let mut encoder = device
+                        .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
                     {
-                        let mut rpass =
-                            encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                                label: None,
-                                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                                    view: &view,
-                                    resolve_target: None,
-                                    ops: wgpu::Operations {
-                                        load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
-                                        store: wgpu::StoreOp::Store,
-                                    },
-                                })],
-                                depth_stencil_attachment: None,
-                                timestamp_writes: None,
-                                occlusion_query_set: None,
-                            });
+                        let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                            label: None,
+                            color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                                view: &view,
+                                resolve_target: None,
+                                ops: wgpu::Operations {
+                                    load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
+                                    store: wgpu::StoreOp::Store,
+                                },
+                            })],
+                            depth_stencil_attachment: None,
+                            timestamp_writes: None,
+                            occlusion_query_set: None,
+                        });
 
                         rpass.set_pipeline(&render_pipeline);
                         rpass.draw(0..3, 0..1);
@@ -149,11 +167,11 @@ async fn main(ex: &Executor<'_>) -> Result<(), impl std::error::Error> {
 
                     window.request_redraw();
                 }
-                _ => {},
+                _ => {}
             },
             Event::AboutToWait => {
                 window.request_redraw();
-            },
+            }
             _ => {}
         }
     })

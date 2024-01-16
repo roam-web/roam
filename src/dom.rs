@@ -148,12 +148,10 @@ enum ElementKind {
     // Web components
     Slot,
     Template,
-
     // TODO: Should we support depcrated DOM element types?
 }
 
 struct Element {
     kind: ElementKind,
-    // TODO: Define tag type soon :tm:
-    tags: Vec<String>,
+    attributes: Vec<String>,
 }
