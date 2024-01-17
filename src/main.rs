@@ -108,6 +108,7 @@ async fn main(ex: &Executor<'_>) -> Result<(), impl std::error::Error> {
         width: size.width,
         height: size.height,
         present_mode: wgpu::PresentMode::AutoVsync,
+        desired_maximum_frame_latency: 2,
         alpha_mode: swapchain_capabilities.alpha_modes[0],
         view_formats: vec![],
     };

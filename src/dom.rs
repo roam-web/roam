@@ -2,7 +2,7 @@ struct Document {
     elements: Vec<Element>,
 }
 
-/// https://developer.mozilla.org/en-US/docs/Web/HTML/Element
+/// <https://developer.mozilla.org/en-US/docs/Web/HTML/Element>
 enum ElementKind {
     // Main root
     Html,
