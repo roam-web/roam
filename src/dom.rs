@@ -1,8 +1,10 @@
+#[derive(Default, Clone)]
 struct Document {
     elements: Vec<Element>,
 }
 
 /// <https://developer.mozilla.org/en-US/docs/Web/HTML/Element>
+#[derive(Clone, Copy)]
 enum ElementKind {
     // Main root
     Html,
@@ -151,7 +153,10 @@ enum ElementKind {
     // TODO: Should we support depcrated DOM element types?
 }
 
+#[derive(Clone)]
 struct Element {
     kind: ElementKind,
     attributes: Vec<String>,
+    children: usize,
+    parent: usize,
 }

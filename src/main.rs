@@ -171,7 +171,7 @@ async fn main(ex: &Executor<'_>) -> Result<(), impl std::error::Error> {
                 _ => {}
             },
             Event::AboutToWait => {
-                window.request_redraw();
+                // window.request_redraw();
             }
             _ => {}
         }
