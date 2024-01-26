@@ -11,6 +11,8 @@ use winit::{
 
 #[apply(main!)]
 async fn main(ex: &Executor<'_>) -> Result<(), impl std::error::Error> {
+    dom::test_parse_html();
+    
     let module_wat = r#"
     (module
     (type $t0 (func (param i32) (result i32)))

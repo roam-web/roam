@@ -160,3 +160,59 @@ struct Element {
     children: usize,
     parent: usize,
 }
+
+const TEST_HTML: &str = r#"
+    <!DOCTYPE html>
+    <html lang="en_US">
+        <body>
+            <p>This is a paragraph.</p>
+            <p>This is another paragraph.</p>
+            <a href="https://www.roblox.com/">Test</a>
+            <a href="https://www.google.com/" />
+            <br>
+        </body>
+    </html>
+"#;
+
+use quick_xml::{
+    events::Event,
+    reader::Reader,
+};
+
+pub fn test_parse_html() {
+    let mut reader = Reader::from_str(TEST_HTML);
+    reader.trim_text(true);
+    reader.expand_empty_elements(true);
+    reader.check_end_names(false);
+
+    let mut count = 0;
+
+    loop {
+        match reader.read_event() {
+            Err(e) => panic!("Error at {}: {:?}", reader.buffer_position(), e),
+            Ok(Event::DocType(e)) => {
+                println!("DOCTYPE: {}", e.unescape().unwrap().into_owned());
+            }
+            Ok(Event::Eof) => break,
+            Ok(Event::Start(e)) => {
+                let n = e.name();
+                let name = String::from_utf8_lossy(n.as_ref());
+                println!("OPEN: {name}");
+
+                for attr in e.attributes() {
+                    let attr = attr.unwrap();
+                    let key = String::from_utf8_lossy(attr.key.as_ref());
+                    let value = String::from_utf8_lossy(attr.value.as_ref());
+                    println!("ATTR: '{}' = '{}'", key, value);
+                }
+            },
+            Ok(Event::Text(e)) => println!("TEXT: {}", e.unescape().unwrap().into_owned()),
+            Ok(Event::End(e)) => {
+                let n = e.name();
+                let name = String::from_utf8_lossy(n.as_ref());
+                println!("CLOSE: {name}");
+            }
+            _ => {}
+        }
+    }
+}
