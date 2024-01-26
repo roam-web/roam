@@ -1,16 +1,20 @@
-use color_eyre::Result;
-use oxc::{
-    allocator::Allocator,
-    ast::{
-        ast::{Expression, Statement as Stmt},
-        AstKind,
-    },
-    parser::Parser,
-    span::SourceType,
-};
-use oxc_semantic::SemanticBuilder;
+mod sexpr;
+pub use sexpr::{SExpr, SExprValue};
 
-pub fn compile<S: ToString>(src: S) -> Result<String> {
+use color_eyre::Result;
+use oxc::{allocator::Allocator, ast::AstKind, parser::Parser, span::SourceType};
+use oxc_semantic::{AstNode, SemanticBuilder};
+
+fn compile_node(node: &AstNode) -> Result<SExprValue> {
+    match node.kind() {
+        AstKind::ExpressionStatement(expr) => match &expr.expression {
+            _ => Ok(SExprValue::Atom("TODO".to_string())),
+        },
+        _ => Ok(SExprValue::Atom("TODO".to_string())),
+    }
+}
+
+pub fn compile<S: ToString>(src: S) -> Result<SExpr> {
     let allocator = Allocator::default();
     let src = src.to_string();
     let res = Parser::new(&allocator, &src, SourceType::default()).parse();
@@ -24,20 +28,17 @@ pub fn compile<S: ToString>(src: S) -> Result<String> {
             .join("\n")));
     }
 
-    let mut ret = "".to_string();
     let sem = SemanticBuilder::new(&src, SourceType::default())
         .with_trivias(res.trivias)
         .build(&res.program);
 
-    for node in sem.semantic.nodes().iter() {
-        match node.kind() {
-            AstKind::ExpressionStatement(expr) => match &expr.expression {
-                Expression::BooleanLiteral(expr) => {}
-                _ => {}
-            },
-            _ => {}
-        }
-    }
+    let compiled = sem
+        .semantic
+        .nodes()
+        .iter()
+        .map(|node| compile_node(node))
+        .collect::<Result<Vec<_>>>()?;
 
-    Ok(ret)
+    let mainfn = SExpr("func".to_string(), compiled);
+    Ok(SExpr("module".to_string(), vec![SExprValue::Expr(mainfn)]))
 }
