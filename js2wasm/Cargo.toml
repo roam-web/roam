@@ -6,7 +6,6 @@ edition = "2021"
 [dependencies]
 color-eyre = "0.6"
 oxc = "0.5"
-oxc_semantic = "0.5"
 
 [lib]
 name = "js2wasm"

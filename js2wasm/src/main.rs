@@ -6,10 +6,7 @@ fn main() -> Result<()> {
 
     // let src = std::fs::read_to_string("in.js")?;
     let src = r#"
-    console.log("hello world");
-    for (let i = 0; i < 10; i++) {
-        console.log(i);
-    }
+    let x, y, z;
     "#;
     println!("{}", js2wasm::compile(src)?);
 

@@ -1,16 +1,15 @@
 mod sexpr;
 pub use sexpr::{SExpr, SExprValue};
 
-use color_eyre::Result;
-use oxc::{allocator::Allocator, ast::AstKind, parser::Parser, span::SourceType};
-use oxc_semantic::{AstNode, SemanticBuilder};
+pub(crate) mod decl;
 
-fn compile_node(node: &AstNode) -> Result<SExprValue> {
-    match node.kind() {
-        AstKind::ExpressionStatement(expr) => match &expr.expression {
-            _ => Ok(SExprValue::Atom("TODO".to_string())),
-        },
-        _ => Ok(SExprValue::Atom("TODO".to_string())),
+use color_eyre::Result;
+use oxc::{allocator::Allocator, ast::ast::Statement as Stmt, parser::Parser, span::SourceType};
+
+pub(crate) fn compile_node(stmt: &Stmt) -> Result<Vec<SExprValue>> {
+    match stmt {
+        Stmt::Declaration(decl) => decl::compile_decl(decl),
+        _ => todo!("{:#?}", stmt),
     }
 }
 
@@ -28,17 +27,41 @@ pub fn compile<S: ToString>(src: S) -> Result<SExpr> {
             .join("\n")));
     }
 
-    let sem = SemanticBuilder::new(&src, SourceType::default())
-        .with_trivias(res.trivias)
-        .build(&res.program);
-
-    let compiled = sem
-        .semantic
-        .nodes()
+    let compiled = res
+        .program
+        .body
         .iter()
         .map(|node| compile_node(node))
-        .collect::<Result<Vec<_>>>()?;
+        .collect::<Result<Vec<_>>>()?
+        .concat();
 
-    let mainfn = SExpr("func".to_string(), compiled);
-    Ok(SExpr("module".to_string(), vec![SExprValue::Expr(mainfn)]))
+    let startfn = SExpr("func".to_string(), compiled);
+    let memexport = SExpr(
+        "export".to_string(),
+        vec![
+            SExprValue::Atom("\"memory\"".to_string()),
+            SExprValue::Expr(SExpr(
+                "memory".to_string(),
+                vec![SExprValue::Atom("0".to_string())],
+            )),
+        ],
+    );
+    let startexport = SExpr(
+        "export".to_string(),
+        vec![
+            SExprValue::Atom("\"_start\"".to_string()),
+            SExprValue::Expr(SExpr(
+                "func".to_string(),
+                vec![SExprValue::Atom("0".to_string())],
+            )),
+        ],
+    );
+    Ok(SExpr(
+        "module".to_string(),
+        vec![
+            SExprValue::Expr(startfn),
+            SExprValue::Expr(memexport),
+            SExprValue::Expr(startexport),
+        ],
+    ))
 }
