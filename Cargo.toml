@@ -27,6 +27,9 @@ smol-macros = "0.1"
 macro_rules_attribute = "0.2"
 color-eyre = "0.6"
 
+[dependencies.js2wasm]
+path = "js2wasm"
+
 [profile.dev]
 opt-level = 1
 

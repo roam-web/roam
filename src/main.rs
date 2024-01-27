@@ -31,7 +31,19 @@ async fn main(ex: &Executor<'_>) -> Result<(), impl std::error::Error> {
     let add_one = instance.exports.get_function("add_one").unwrap();
     let result = add_one.call(&mut store, &[Value::I32(42)]).unwrap();
 
-    println!("{result:?}");
+    println!("WASMER TEST RESULT: add_one(42) = {result:?}");
+
+    // test js2wasm output with wasmer
+    const JS: &str = r#"
+        let x, y, z;
+    "#;
+
+    // let wasm = js2wasm::compile(JS).unwrap().to_string();
+
+    // println!("COMPILED WASM: '{wasm}'");
+
+    // let module = Module::new(&store, &wasm).unwrap();
+    // let instance = Instance::new(&mut store, &module, &import_object).unwrap();    
 
     let event_loop = EventLoop::new().unwrap();
 
