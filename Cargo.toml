@@ -39,3 +39,6 @@ strip = true
 opt-level = 3
 panic = "abort"
 codegen-units = 1
+
+[workspace]
+members = ["js2wasm"]
